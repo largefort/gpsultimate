@@ -57,6 +57,9 @@
             keepCurrentZoomLevel: true // Keep current zoom level when locating
         }).addTo(map);
 
+        // Variable to store the marker (so we can remove the previous one)
+        var currentMarker = null;
+
         // Function to perform reverse geocoding with Nominatim
         function reverseGeocode(lat, lng) {
             var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
@@ -66,15 +69,20 @@
                 .catch(() => "Location name not available"); // Handle errors
         }
 
-        // When the location is found, add a marker with latitude, longitude, and location name
+        // When the location is found, add or update the marker with latitude, longitude, and location name
         map.on('locationfound', function(e) {
             var lat = e.latlng.lat.toFixed(6); // Latitude (rounded to 6 decimal places)
             var lng = e.latlng.lng.toFixed(6); // Longitude (rounded to 6 decimal places)
 
+            // Remove the previous marker if it exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+
             // Fetch location name using reverse geocoding
             reverseGeocode(lat, lng).then(function(locationName) {
                 // Add marker with lat/lng and location name in the popup
-                L.marker(e.latlng).addTo(map)
+                currentMarker = L.marker(e.latlng).addTo(map)
                     .bindPopup(
                         `Your location: <br> 
                          Latitude: ${lat} <br> 
