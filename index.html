@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Ultimate</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+
+    <script>
+        // Initialize the map with a default view
+        var map = L.map('map').setView([51.505, -0.09], 13); // Starting coordinates (London)
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Add Locate Control
+        L.control.locate({
+            position: 'topright', // Position of the "Locate Me" button
+            strings: {
+                title: "Show me where I am" // Text for the button hover
+            },
+            locateOptions: {
+                enableHighAccuracy: true // GPS high accuracy setting
+            }
+        }).addTo(map);
+
+        // When the location is found, add a marker and a popup
+        map.on('locationfound', function(e) {
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("You are here!")
+                .openPopup();
+        });
+
+        // Handle location error (optional)
+        map.on('locationerror', function(e) {
+            alert("Location access denied.");
+        });
+
+        // Automatically locate the user on page load
+        map.locate({setView: true, maxZoom: 16});
+    </script>
+</body>
+</html>
