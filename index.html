@@ -61,6 +61,7 @@
 
         // Variable to store the custom marker (so we can remove the previous one)
         var currentMarker = null;
+        var isFollowing = true; // Variable to check if the map is following the user
 
         // Function to perform reverse geocoding with Nominatim
         function reverseGeocode(lat, lng) {
@@ -91,6 +92,11 @@
                          Longitude: ${lng} <br> 
                          Location: ${locationName}`
                     ).openPopup();
+
+                // Only pan the map to the marker if the map is set to follow the user
+                if (isFollowing) {
+                    map.setView(e.latlng, map.getZoom(), { animate: true });
+                }
             });
         });
 
@@ -99,8 +105,30 @@
             alert("Location access denied.");
         });
 
+        // Stop following when the user moves the map manually
+        map.on('dragstart', function() {
+            isFollowing = false;
+        });
+
         // Automatically locate the user on page load
         map.locate({setView: true, maxZoom: 16});
+
+        // Re-enable following when the user clicks the "Locate Me" button again
+        L.control.locate({
+            position: 'topright',
+            strings: {
+                title: "Follow me" // Text for the follow button
+            },
+            locateOptions: {
+                enableHighAccuracy: true
+            },
+            flyTo: true,
+            keepCurrentZoomLevel: true,
+            onLocationFound: function(e) {
+                isFollowing = true; // Re-enable following when the user clicks the button
+                map.locate({setView: true, maxZoom: 16}); // Center the map on the user's location again
+            }
+        }).addTo(map);
     </script>
 </body>
 </html>
