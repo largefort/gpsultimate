@@ -44,7 +44,7 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // Add Locate Control
+        // Add Locate Control, disabling the default marker and circle
         L.control.locate({
             position: 'topright', // Position of the "Locate Me" button
             strings: {
@@ -54,10 +54,12 @@
                 enableHighAccuracy: true // GPS high accuracy setting
             },
             flyTo: true, // Fly animation when locating
-            keepCurrentZoomLevel: true // Keep current zoom level when locating
+            keepCurrentZoomLevel: true, // Keep current zoom level when locating
+            markerClass: L.circleMarker, // Disable the default blue marker
+            drawCircle: false, // Disable the accuracy circle
         }).addTo(map);
 
-        // Variable to store the marker (so we can remove the previous one)
+        // Variable to store the custom marker (so we can remove the previous one)
         var currentMarker = null;
 
         // Function to perform reverse geocoding with Nominatim
@@ -69,7 +71,7 @@
                 .catch(() => "Location name not available"); // Handle errors
         }
 
-        // When the location is found, add or update the marker with latitude, longitude, and location name
+        // When the location is found, add or update the custom marker with latitude, longitude, and location name
         map.on('locationfound', function(e) {
             var lat = e.latlng.lat.toFixed(6); // Latitude (rounded to 6 decimal places)
             var lng = e.latlng.lng.toFixed(6); // Longitude (rounded to 6 decimal places)
