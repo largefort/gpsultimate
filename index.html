@@ -2,13 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, initial-scale=1, maximum-scale=1">
     <title>GPS Ultimate</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        /* Ensuring the map covers full height and is responsive */
         #map {
             height: 100vh;
             width: 100%;
+        }
+
+        /* Mobile optimization for the Locate button */
+        .leaflet-control-locate {
+            font-size: 18px;
+            padding: 10px;
+        }
+
+        /* Ensure map controls are easy to tap */
+        .leaflet-control {
+            touch-action: auto;
         }
     </style>
 </head>
@@ -21,7 +33,10 @@
 
     <script>
         // Initialize the map with a default view
-        var map = L.map('map').setView([51.505, -0.09], 13); // Starting coordinates (London)
+        var map = L.map('map', {
+            tap: false, // Disable tap delay for mobile
+            zoomControl: true // Enable zoom control on mobile
+        }).setView([51.505, -0.09], 13); // Starting coordinates (London)
 
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -37,14 +52,36 @@
             },
             locateOptions: {
                 enableHighAccuracy: true // GPS high accuracy setting
-            }
+            },
+            flyTo: true, // Fly animation when locating
+            keepCurrentZoomLevel: true // Keep current zoom level when locating
         }).addTo(map);
 
-        // When the location is found, add a marker and a popup
+        // Function to perform reverse geocoding with Nominatim
+        function reverseGeocode(lat, lng) {
+            var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+            return fetch(url)
+                .then(response => response.json())
+                .then(data => data.display_name) // Return the location name from the response
+                .catch(() => "Location name not available"); // Handle errors
+        }
+
+        // When the location is found, add a marker with latitude, longitude, and location name
         map.on('locationfound', function(e) {
-            L.marker(e.latlng).addTo(map)
-                .bindPopup("You are here!")
-                .openPopup();
+            var lat = e.latlng.lat.toFixed(6); // Latitude (rounded to 6 decimal places)
+            var lng = e.latlng.lng.toFixed(6); // Longitude (rounded to 6 decimal places)
+
+            // Fetch location name using reverse geocoding
+            reverseGeocode(lat, lng).then(function(locationName) {
+                // Add marker with lat/lng and location name in the popup
+                L.marker(e.latlng).addTo(map)
+                    .bindPopup(
+                        `Your location: <br> 
+                         Latitude: ${lat} <br> 
+                         Longitude: ${lng} <br> 
+                         Location: ${locationName}`
+                    ).openPopup();
+            });
         });
 
         // Handle location error (optional)
