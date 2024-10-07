@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
     <title>GPS Ultimate</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
@@ -31,104 +31,6 @@
     <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
 
-    <script>
-        // Initialize the map with a default view
-        var map = L.map('map', {
-            tap: false, // Disable tap delay for mobile
-            zoomControl: true // Enable zoom control on mobile
-        }).setView([51.505, -0.09], 13); // Starting coordinates (London)
-
-        // Add OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Add Locate Control, disabling the default marker and circle
-        L.control.locate({
-            position: 'topright', // Position of the "Locate Me" button
-            strings: {
-                title: "Show me where I am" // Text for the button hover
-            },
-            locateOptions: {
-                enableHighAccuracy: true // GPS high accuracy setting
-            },
-            flyTo: true, // Fly animation when locating
-            keepCurrentZoomLevel: true, // Keep current zoom level when locating
-            markerClass: L.circleMarker, // Disable the default blue marker
-            drawCircle: false, // Disable the accuracy circle
-        }).addTo(map);
-
-        // Variable to store the custom marker (so we can remove the previous one)
-        var currentMarker = null;
-        var isFollowing = true; // Variable to check if the map is following the user
-
-        // Function to perform reverse geocoding with Nominatim
-        function reverseGeocode(lat, lng) {
-            var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
-            return fetch(url)
-                .then(response => response.json())
-                .then(data => data.display_name) // Return the location name from the response
-                .catch(() => "Location name not available"); // Handle errors
-        }
-
-        // When the location is found, add or update the custom marker with latitude, longitude, and location name
-        map.on('locationfound', function(e) {
-            var lat = e.latlng.lat.toFixed(6); // Latitude (rounded to 6 decimal places)
-            var lng = e.latlng.lng.toFixed(6); // Longitude (rounded to 6 decimal places)
-
-            // Remove the previous marker if it exists
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-
-            // Fetch location name using reverse geocoding
-            reverseGeocode(lat, lng).then(function(locationName) {
-                // Add marker with lat/lng and location name in the popup
-                currentMarker = L.marker(e.latlng).addTo(map)
-                    .bindPopup(
-                        `Your location: <br> 
-                         Latitude: ${lat} <br> 
-                         Longitude: ${lng} <br> 
-                         Location: ${locationName}`
-                    ).openPopup();
-
-                // Only pan the map to the marker if the map is set to follow the user
-                if (isFollowing) {
-                    map.setView(e.latlng, map.getZoom(), { animate: true });
-                }
-            });
-        });
-
-        // Handle location error (optional)
-        map.on('locationerror', function(e) {
-            alert("Location access denied.");
-        });
-
-        // Stop following when the user moves the map manually
-        map.on('dragstart', function() {
-            isFollowing = false;
-        });
-
-        // Automatically locate the user on page load
-        map.locate({setView: true, maxZoom: 16});
-
-        // Re-enable following when the user clicks the "Locate Me" button again
-        L.control.locate({
-            position: 'topright',
-            strings: {
-                title: "Follow me" // Text for the follow button
-            },
-            locateOptions: {
-                enableHighAccuracy: true
-            },
-            flyTo: true,
-            keepCurrentZoomLevel: true,
-            onLocationFound: function(e) {
-                isFollowing = true; // Re-enable following when the user clicks the button
-                map.locate({setView: true, maxZoom: 16}); // Center the map on the user's location again
-            }
-        }).addTo(map);
-    </script>
+    <script src="js/index.js"></script>
 </body>
 </html>
